@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { User } from './models/User';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +29,120 @@ import { Component } from '@angular/core';
   `,
   styles: []
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'RXJS';
+
+  ngOnInit(): void {
+
+    // Using promisse
+
+    this.myPromise('Gustavo').then(result => console.log(result));
+    
+    // Handling error in promise with catch
+    this.myPromise('José')
+      .then(result => console.log(result))
+      .catch(erro => console.log(erro));
+
+    // END - Using promisse
+
+    // Using Observable
+
+    //Error
+    this.myObservable('')
+      .subscribe(result => 
+        console.log(result),
+        erro => console.log(erro)
+      );
+
+    this.myObservable('Gustavo')
+      .subscribe(result => console.log(result));
+
+    // Using oberver
+    const observer = {
+      next: value => console.log('Next: ', value),
+      error: error => console.log('Erro: ', error),
+      complete: () => console.log('END')
+    };
+
+    //const obs = this.myObservable('Gustavo');  // ok
+    
+    //const obs = this.myObservable('Gustav');    // get error
+
+    const obs = this.myObservableObject('Gustavo', 'gustavo@admin.com');  // ok
+
+    const subs = obs.subscribe(observer);
+
+    // Canceling the subscription
+    setTimeout(() => {
+      subs.unsubscribe();
+    }, 3500);
+
+    // END - Using oberver
+
+    // END - Using Observable
+  }
+
+  myPromise(nome: string) : Promise<string>
+  {
+    return new Promise((resolve, reject) =>{
+      if(nome==='Gustavo'){
+        setTimeout(() =>{
+          resolve('Be welcome ' + nome);
+        }, 5000);
+      }
+      else{
+        reject('Ops! You are not Gustavo');
+      }
+    })
+  }
+
+  myObservable(nome: string) : Observable<string>
+  {
+    return new Observable(subscriber => {
+
+      if(nome === 'Gustavo'){
+
+        subscriber.next('Hello! ' + nome);
+        subscriber.next('Hello again! ' + nome);
+
+        setTimeout(() =>{
+          subscriber.next('Hello again hahahha! ' + nome);
+        }, 5000);
+
+        subscriber.complete();
+
+      }
+      else{
+          subscriber.error('Ops! ERROR!!!');
+      }
+    });
+  }
+
+  myObservableObject(name: string, email: string) : Observable<User>
+  {
+    return new Observable(subscriber => {
+
+      if(name === 'Gustavo'){
+
+        let user = new User(name, email);
+
+        setTimeout(() =>{
+          subscriber.next(user);
+        }, 1000);
+
+        setTimeout(() =>{
+          subscriber.next(user);
+        }, 3000);
+
+        setTimeout(() =>{
+          subscriber.complete();
+        }, 5000);
+
+      }
+      else{
+          subscriber.error('Ops! ERROR!!!');
+      }
+    });
+  }
+
 }
